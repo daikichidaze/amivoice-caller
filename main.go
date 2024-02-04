@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+    "path/filepath"
 )
 
 func main() {
@@ -63,7 +64,10 @@ func createMultiPartRequest(audioFilePath, apiKey string) (bytes.Buffer, string,
 	_ = writer.WriteField("d", "-a-general")
 	_ = writer.WriteField("u", apiKey)
 
-	part, err := writer.CreateFormFile("a", "test.wav")
+	// Extract the filename from the audioFilePath
+	_, fileName := filepath.Split(audioFilePath)
+
+	part, err := writer.CreateFormFile("a", fileName)
 	if err != nil {
 		return bytes.Buffer{}, "", err
 	}
@@ -79,6 +83,7 @@ func createMultiPartRequest(audioFilePath, apiKey string) (bytes.Buffer, string,
 
 	return requestBody, writer.FormDataContentType(), nil
 }
+
 
 func sendRequest(url string, requestBody bytes.Buffer, contentType string) (string, error) {
 	client := &http.Client{}
