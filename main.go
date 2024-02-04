@@ -10,80 +10,89 @@ import (
 )
 
 func main() {
-	// Check if an audio file path is provided as an argument
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run main.go <path to audio file>")
 		return
 	}
+	audioFilePath := os.Args[1]
 
-	audioFilePath := os.Args[1] // Get the path to the audio file from command line arguments
-
-	// Read the API key from a local file named "APIKEY"
-	apiKey, err := os.ReadFile("APIKEY") // Local file name containing the API key
+	apiKey, err := loadAPIKey("APIKEY")
 	if err != nil {
-		fmt.Println("Error reading API key file:", err)
+		fmt.Println("Error loading API key:", err)
 		return
 	}
 
-	url := "https://acp-api-async.amivoice.com/v1/recognitions"
-	method := "POST"
+	requestBody, contentType, err := createMultiPartRequest(audioFilePath, apiKey)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
 
-	// Open the audio file
+	response, err := sendRequest("https://acp-api-async.amivoice.com/v1/recognitions", requestBody, contentType)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+
+	fmt.Println(response)
+}
+
+func loadAPIKey(filePath string) (string, error) {
+	apiKey, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+	return string(apiKey), nil
+}
+
+func createMultiPartRequest(audioFilePath, apiKey string) (bytes.Buffer, string, error) {
 	file, err := os.Open(audioFilePath)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return bytes.Buffer{}, "", err
 	}
 	defer file.Close()
 
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
 
-	// Add form fields
 	_ = writer.WriteField("d", "-a-general")
-	_ = writer.WriteField("u", string(apiKey)) // API key
+	_ = writer.WriteField("u", apiKey)
 
-	// Add the file part to the form
 	part, err := writer.CreateFormFile("a", "test.wav")
 	if err != nil {
-		fmt.Println(err)
-		return
+		return bytes.Buffer{}, "", err
 	}
 	_, err = io.Copy(part, file)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return bytes.Buffer{}, "", err
 	}
 
-	// Close the writer to finalize the multipart message
 	err = writer.Close()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return bytes.Buffer{}, "", err
 	}
 
-	// Create and send the request
+	return requestBody, writer.FormDataContentType(), nil
+}
+
+func sendRequest(url string, requestBody bytes.Buffer, contentType string) (string, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, &requestBody)
+	req, err := http.NewRequest("POST", url, &requestBody)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return "", err
 	}
-	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Content-Type", contentType)
 
-	// Perform the request
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return "", err
 	}
 	defer resp.Body.Close()
 
-	// Read and print the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return "", err
 	}
-	fmt.Println(string(body))
+
+	return string(body), nil
 }
