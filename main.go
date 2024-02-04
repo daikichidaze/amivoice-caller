@@ -34,7 +34,12 @@ func main() {
 		return
 	}
 
-	fmt.Println(response)
+	if err := saveResponseToFile(response, "response.txt"); err != nil {
+		fmt.Println("Error saving response to file:", err)
+		return
+	}
+
+	fmt.Println("Response saved to response.txt")
 }
 
 func loadAPIKey(filePath string) (string, error) {
@@ -95,4 +100,15 @@ func sendRequest(url string, requestBody bytes.Buffer, contentType string) (stri
 	}
 
 	return string(body), nil
+}
+
+func saveResponseToFile(response, filePath string) error {
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(response)
+	return err
 }
