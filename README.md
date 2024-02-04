@@ -23,7 +23,7 @@ https://acp.amivoice.com/
 Clone this repository or download the source code:
 
 ```bash
-git clone https://your-repository-url.git
+git clone git@github.com:daikichidaze/amivoice-caller.git
 ```
 
 Ensure `ffmpeg` is installed on your system. On most Unix systems, you can install `ffmpeg` via your package manager. For example, on Ubuntu:
@@ -55,11 +55,3 @@ go run main.go /path/to/your/audiofile.m4a
 3. **Creating a Multi-Part Request**: Prepares a multi-part/form-data request with the converted MP3 file and the loaded API key.
 4. **Sending the Request**: Uploads the file to the API endpoint and handles the response.
 5. **Saving the Response**: The API response is saved to `response.txt` in the same directory for further inspection.
-
-## License
-
-Specify your license here or indicate if the project is open-source.
-
----
-
-Remember to replace `https://your-repository-url.git` with the actual URL of your repository and adjust any specific details about how your module works or any additional configurations required.
