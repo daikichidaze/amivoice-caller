@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+    "strings"
 )
 
 func main() {
@@ -130,10 +131,22 @@ func saveResponseToFile(response, filePath string) error {
 }
 
 func convertToMP3(inputFilePath string) (string, error) {
-	outputFilePath := inputFilePath + ".mp3"
+	// Extract the file name without extension
+	baseName := strings.TrimSuffix(inputFilePath, filepath.Ext(inputFilePath))
+	outputFilePath := baseName + ".mp3"
+
+	// Create the ffmpeg command to convert the input file to MP3 format
 	cmd := exec.Command("ffmpeg", "-i", inputFilePath, "-vn", "-ar", "44100", "-ac", "2", "-b:a", "192k", outputFilePath)
+	
+	// Connect ffmpeg's standard output and standard error output to the current process's output
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	
+	// Run the ffmpeg command and return any errors
 	if err := cmd.Run(); err != nil {
 		return "", err
 	}
+
+	// Return the path of the converted MP3 file
 	return outputFilePath, nil
 }
