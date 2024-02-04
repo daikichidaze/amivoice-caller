@@ -7,7 +7,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-    "path/filepath"
+	"os/exec"
+	"path/filepath"
 )
 
 func main() {
@@ -17,13 +18,21 @@ func main() {
 	}
 	audioFilePath := os.Args[1]
 
+	// Convert the audio file to MP3 format
+	mp3FilePath, err := convertToMP3(audioFilePath)
+	if err != nil {
+		fmt.Println("Error converting file to MP3:", err)
+		return
+	}
+	defer os.Remove(mp3FilePath) // Clean up the temporary MP3 file afterwards
+
 	apiKey, err := loadAPIKey("APIKEY")
 	if err != nil {
 		fmt.Println("Error loading API key:", err)
 		return
 	}
 
-	requestBody, contentType, err := createMultiPartRequest(audioFilePath, apiKey)
+	requestBody, contentType, err := createMultiPartRequest(mp3FilePath, apiKey)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return
@@ -42,6 +51,8 @@ func main() {
 
 	fmt.Println("Response saved to response.txt")
 }
+
+// Other functions (loadAPIKey, createMultiPartRequest, sendRequest, saveResponseToFile) remain unchanged.
 
 func loadAPIKey(filePath string) (string, error) {
 	apiKey, err := os.ReadFile(filePath)
@@ -116,4 +127,13 @@ func saveResponseToFile(response, filePath string) error {
 
 	_, err = file.WriteString(response)
 	return err
+}
+
+func convertToMP3(inputFilePath string) (string, error) {
+	outputFilePath := inputFilePath + ".mp3"
+	cmd := exec.Command("ffmpeg", "-i", inputFilePath, "-vn", "-ar", "44100", "-ac", "2", "-b:a", "192k", outputFilePath)
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	return outputFilePath, nil
 }
