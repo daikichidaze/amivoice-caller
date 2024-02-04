@@ -25,7 +25,6 @@ func main() {
 		fmt.Println("Error converting file to MP3:", err)
 		return
 	}
-	defer os.Remove(mp3FilePath) // Clean up the temporary MP3 file afterwards
 
 	apiKey, err := loadAPIKey("APIKEY")
 	if err != nil {
