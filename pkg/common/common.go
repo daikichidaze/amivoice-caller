@@ -4,7 +4,7 @@ import (
     "os"
 )
 
-func loadAPIKey(filePath string) (string, error) {
+func LoadAPIKey(filePath string) (string, error) {
 	apiKey, err := os.ReadFile(filePath)
 	if err != nil {
 		return "", err
