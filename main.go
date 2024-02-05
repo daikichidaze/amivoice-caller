@@ -62,37 +62,49 @@ func loadAPIKey(filePath string) (string, error) {
 	return string(apiKey), nil
 }
 
-func createMultiPartRequest(audioFilePath, apiKey string) (bytes.Buffer, string, error) {
-	file, err := os.Open(audioFilePath)
-	if err != nil {
-		return bytes.Buffer{}, "", err
-	}
-	defer file.Close()
+func createMultiPartRequest(audioFilePath, apiKey string, diarizationMinSpeaker, diarizationMaxSpeaker int) (bytes.Buffer, string, error) {
+    file, err := os.Open(audioFilePath)
+    if err != nil {
+        return bytes.Buffer{}, "", err
+    }
+    defer file.Close()
 
-	var requestBody bytes.Buffer
-	writer := multipart.NewWriter(&requestBody)
+    var requestBody bytes.Buffer
+    writer := multipart.NewWriter(&requestBody)
 
-	_ = writer.WriteField("d", "-a-general")
-	_ = writer.WriteField("u", apiKey)
+    // `createSpeakerDiarization`関数を呼び出してパラメータ文字列を生成
+    diarizationParams := createSpeakerDiarization(diarizationMinSpeaker, diarizationMaxSpeaker)
+    _ = writer.WriteField("d", fmt.Sprintf("grammarFileNames=-a-general %s", diarizationParams))
 
-	// Extract the filename from the audioFilePath
-	_, fileName := filepath.Split(audioFilePath)
+    _ = writer.WriteField("u", apiKey)
 
-	part, err := writer.CreateFormFile("a", fileName)
-	if err != nil {
-		return bytes.Buffer{}, "", err
-	}
-	_, err = io.Copy(part, file)
-	if err != nil {
-		return bytes.Buffer{}, "", err
-	}
+    _, fileName := filepath.Split(audioFilePath)
+    part, err := writer.CreateFormFile("a", fileName)
+    if err != nil {
+        return bytes.Buffer{}, "", err
+    }
+    _, err = io.Copy(part, file)
+    if err != nil {
+        return bytes.Buffer{}, "", err
+    }
 
-	err = writer.Close()
-	if err != nil {
-		return bytes.Buffer{}, "", err
-	}
+    err = writer.Close()
+    if err != nil {
+        return bytes.Buffer{}, "", err
+    }
 
-	return requestBody, writer.FormDataContentType(), nil
+    return requestBody, writer.FormDataContentType(), nil
+}
+
+
+func createSpeakerDiarization(diarizationMinSpeaker int, diarizationMaxSpeaker int) string {
+    // Always set speakerDiarization to True
+    speakerDiarization := "True"
+    
+    // Create query parameters with dynamic values for diarizationMinSpeaker and diarizationMaxSpeaker
+    params := fmt.Sprintf("speakerDiarization=%s&diarizationMinSpeaker=%d&diarizationMaxSpeaker=%d",
+        speakerDiarization, diarizationMinSpeaker, diarizationMaxSpeaker)
+    return params
 }
 
 

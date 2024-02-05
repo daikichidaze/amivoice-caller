@@ -1,2 +1,4 @@
 APIKEY
 go.mod
+**.txt
+**.json
