@@ -139,8 +139,16 @@ func convertToMP3(inputFilePath string) (string, error) {
 	baseName := strings.TrimSuffix(inputFilePath, filepath.Ext(inputFilePath))
 	outputFilePath := baseName + ".mp3"
 
+	// Check if the output file already exists
+	if _, err := os.Stat(outputFilePath); err == nil {
+		// If the file exists, delete it
+		if err := os.Remove(outputFilePath); err != nil {
+			return "", fmt.Errorf("failed to delete existing output file: %v", err)
+		}
+	}
+
 	// Create the ffmpeg command to convert the input file to MP3 format
-	cmd := exec.Command("ffmpeg", "-i", inputFilePath, "-codec:v", "-ar", "copy", "-codec:a", "libmp3lame", "-q:a", "192k", outputFilePath)
+	cmd := exec.Command("ffmpeg", "-i", inputFilePath, "-codec:v", "copy", "-codec:a", "libmp3lame", "-q:a", "2", "-b:a", "192k", outputFilePath)
 	
 	// Connect ffmpeg's standard output and standard error output to the current process's output
 	cmd.Stdout = os.Stdout
