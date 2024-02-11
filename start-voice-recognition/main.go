@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"path/filepath"
     "strings"
+
+	"github.com/daikichidaze/amivoice-caller/pkg/common"
 )
 
 func main() {
@@ -26,7 +28,7 @@ func main() {
 		return
 	}
 
-	apiKey, err := loadAPIKey("APIKEY")
+	apiKey, err := common.LoadAPIKey("../APIKEY")
 	if err != nil {
 		fmt.Println("Error loading API key:", err)
 		return
@@ -50,16 +52,6 @@ func main() {
 	}
 
 	fmt.Println("Response saved to response.txt")
-}
-
-// Other functions (loadAPIKey, createMultiPartRequest, sendRequest, saveResponseToFile) remain unchanged.
-
-func loadAPIKey(filePath string) (string, error) {
-	apiKey, err := os.ReadFile(filePath)
-	if err != nil {
-		return "", err
-	}
-	return string(apiKey), nil
 }
 
 func createMultiPartRequest(audioFilePath, apiKey string, diarizationMinSpeaker, diarizationMaxSpeaker int) (bytes.Buffer, string, error) {
