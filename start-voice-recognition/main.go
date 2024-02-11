@@ -28,13 +28,14 @@ func main() {
 		return
 	}
 
-	apiKey, err := common.LoadAPIKey("../APIKEY")
+	apiKey, err := common.LoadAPIKey("./APIKEY")
 	if err != nil {
 		fmt.Println("Error loading API key:", err)
 		return
 	}
 
-	requestBody, contentType, err := createMultiPartRequest(mp3FilePath, apiKey)
+	numberOfSpealer := 2
+	requestBody, contentType, err := createMultiPartRequest(mp3FilePath, apiKey, numberOfSpealer, numberOfSpealer)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return
