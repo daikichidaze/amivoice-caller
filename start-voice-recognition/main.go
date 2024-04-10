@@ -47,12 +47,12 @@ func main() {
 		return
 	}
 
-	if err := saveResponseToFile(response, "response.txt"); err != nil {
+	if err := saveResponseToFile(response, "response.json"); err != nil {
 		fmt.Println("Error saving response to file:", err)
 		return
 	}
 
-	fmt.Println("Response saved to response.txt")
+	fmt.Println("Response saved to response.json")
 }
 
 func createMultiPartRequest(audioFilePath, apiKey string, diarizationMinSpeaker, diarizationMaxSpeaker int) (bytes.Buffer, string, error) {
@@ -95,7 +95,7 @@ func createSpeakerDiarization(diarizationMinSpeaker int, diarizationMaxSpeaker i
     speakerDiarization := "True"
     
     // Create query parameters with dynamic values for diarizationMinSpeaker and diarizationMaxSpeaker
-    params := fmt.Sprintf("speakerDiarization=%s&diarizationMinSpeaker=%d&diarizationMaxSpeaker=%d",
+    params := fmt.Sprintf("speakerDiarization=%s diarizationMinSpeaker=%d diarizationMaxSpeaker=%d",
         speakerDiarization, diarizationMinSpeaker, diarizationMaxSpeaker)
     return params
 }
